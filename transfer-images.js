@@ -28,6 +28,7 @@ if (sinceAt > -1 && process.argv.length > sinceAt) {
 (function() {
     if (cluster.isMaster) {
         var workers          = []
+          , totalImages      = 0
           , completeHandlers = {}
           , imagesAdded      = 0
           , imagesErrored    = 0
@@ -58,17 +59,26 @@ if (sinceAt > -1 && process.argv.length > sinceAt) {
             }
         };
 
+        // Completeness-calculator
+        var getProgress = function() {
+            return '[' + (imagesAdded + imagesSkipped + imagesErrored) + ' / ' + totalImages + ']';
+        };
+
         // Callback from workers
         var onWorkerMessage = function(msg) {
-            if (msg.type == 'complete' && verbose) {
-                console.log(msg.id + ' completed');
+            if (msg.type == 'complete') {
                 imagesAdded++;
-            } else if (msg.type == 'already-exists' && verbose) {
-                console.log(msg.id + ' already exists on target');
+                if (verbose) {
+                    console.log(getProgress() + ' ' + msg.id + ' completed');
+                }
+            } else if (msg.type == 'already-exists') {
                 imagesSkipped++;
+                if (verbose) {
+                    console.log(getProgress() + ' ' + msg.id + ' already exists on target');
+                }
             } else if (msg.type == 'error') {
-                console.log(msg.id + ' failed - ' + msg.error);
                 imagesErrored++;
+                console.log(getProgress() + ' ' + msg.id + ' failed - ' + msg.error);
             }
 
             if (completeHandlers[this.id]) {
@@ -117,6 +127,8 @@ if (sinceAt > -1 && process.argv.length > sinceAt) {
             if (err) {
                 return failed++;
             }
+
+            totalImages += images.length;
 
             for (var i = 0; i < images.length; i++) {
                 queue.add([
