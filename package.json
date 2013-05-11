@@ -1,0 +1,22 @@
+{
+    "name": "imbo-image-transfer",
+    "version": "0.1.0",
+    "description": "Transfers images from one Imbo installation to another",
+    "author": { "name": "Espen Hovlandsdal" },
+    "contributors": [{
+        "name": "Espen Hovlandsdal",
+        "email": "espen@hovlandsdal.com",
+        "url": "http://rexxars.com"
+    }],
+    "main": "./transfer-images",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rexxars/imbo-image-transfer.git"
+    },
+    "dependencies" : {
+        "imbo-client" : ">= 0.3.11"
+    },
+    "scripts": {
+        "start": "node transfer-images.js"
+    }
+}

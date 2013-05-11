@@ -1,0 +1,13 @@
+{
+    "from": {
+        "host": "http://some.imbo/host",
+        "publicKey": "some-public-key",
+        "privateKey": "some-private-key"
+    },
+
+    "to": {
+        "host": "http://some.other/host",
+        "publicKey": "some-other-public-key",
+        "privateKey": "some-other-private-key"
+    }
+}
