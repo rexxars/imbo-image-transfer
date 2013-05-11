@@ -5,7 +5,7 @@ Copies images from one Imbo-installation to another installation or user
 
 ## Requirements
 
-* Node.js >= 0.6
+* Node.js >= 0.8
 
 ## Installation/usage
 
