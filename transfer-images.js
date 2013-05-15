@@ -164,18 +164,76 @@ if (sinceAt > -1 && process.argv.length > sinceAt) {
           , destination = new Imbo.Client(config.to.host,   config.to.publicKey,   config.to.privateKey)
           , url;
 
-        process.on('message', function(item) {
-            destination.imageIdentifierExists(item[0], function(err, exists) {
+        // Handler for the image-transfer flow
+        var imboHandler = {
+            setImageExtension: function(ext) {
+                this.extension = ext;
+            },
+
+            setImageIdentifier: function(id) {
+                this.id = id;
+            },
+
+            run: function() {
+                destination.imageIdentifierExists(
+                    this.id,
+                    this.onImageExists.bind(this)
+                );
+            },
+
+            onImageExists: function(err, exists) {
                 if (exists) {
-                    return process.send({ type: 'already-exists', id: item[0] });
+                    return this.complete('already-exists');
                 }
 
-                // Image does not exist, add it
-                url = source.getImageUrl(item[0]).convert(item[1]);
-                destination.addImageFromUrl(url, function(err, res) {
-                    process.send({ type: (err ? 'error' : 'complete'), id: item[0], error: err });
+                url = source.getImageUrl(this.id).convert(this.extension);
+                destination.addImageFromUrl(
+                    url,
+                    this.onAddImageResponse.bind(this)
+                );
+            },
+
+            onAddImageResponse: function(err, res) {
+                if (err) {
+                    return this.complete('error', err);
+                }
+
+                destination.getMetadata(
+                    this.id,
+                    this.onGetMetadata.bind(this)
+                );
+            },
+
+            onGetMetadata: function(err, data) {
+                if (err) {
+                    return this.complete('error', err);
+                }
+
+                destination.replaceMetadata(
+                    this.id,
+                    data,
+                    this.onReplaceMetadata.bind(this)
+                );
+            },
+
+            onReplaceMetadata: function(err) {
+                this.complete('complete', err);
+            },
+
+            complete: function(type, err) {
+                process.send({
+                    type : type,
+                    id   : this.id,
+                    error: err
                 });
-            });
+            }
+        };
+
+        process.on('message', function(item) {
+            imboHandler.setImageExtension(item[1]);
+            imboHandler.setImageIdentifier(item[0]);
+
+            imboHandler.run();
         });
 
     }
