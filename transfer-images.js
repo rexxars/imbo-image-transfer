@@ -1,5 +1,5 @@
 var cluster = require('cluster')
-  , Imbo    = require('imbo-client')
+  , Imbo    = require('imboclient')
   , Queue   = require('./queue')
   , numCpus = require('os').cpus().length
   , verbose = process.argv.indexOf('--verbose') > -1
@@ -137,6 +137,7 @@ if (sinceAt > -1 && process.argv.length > sinceAt) {
                 ]);
             }
 
+            console.log(images.length, batchSize);
             if (images.length == batchSize) {
                 // Not done yet, fetch next batch
                 page++;
@@ -152,7 +153,8 @@ if (sinceAt > -1 && process.argv.length > sinceAt) {
             if (verbose) {
                 console.log('Fetching image batch');
             }
-            from.getImages(onImageBatchFetched, query);
+
+            from.getImages(query, onImageBatchFetched);
         };
 
         // Start fetching
